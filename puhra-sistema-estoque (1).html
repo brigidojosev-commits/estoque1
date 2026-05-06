@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puhra · Sistema de Gestão de Estoque</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #EBBF20;
+    --gold-soft: #F8E9A8;
+    --dark: #222627;
+    --gray: #67645E;
+    --light: #FAFAF7;
+    --surface: #FFFFFF;
+    --border: #E9E6DD;
+    --border-strong: #D6D2C7;
+    --success: #2D7A4F;
+    --success-bg: #EAF5EE;
+    --warning: #B07A0A;
+    --warning-bg: #FCF1D7;
+    --danger: #B83A2E;
+    --danger-bg: #FBEAE7;
+    --info-bg: #F1EDE2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--light);
+    color: var(--dark);
+    line-height: 1.55;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    padding: 32px 20px 80px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .brand { display: flex; align-items: baseline; gap: 12px; }
+  .brand-mark {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .brand-mark::after {
+    content: "";
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-left: 4px;
+    transform: translateY(-2px);
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--gray);
+    letter-spacing: -0.2px;
+  }
+  .meta { color: var(--gray); font-size: 12px; text-align: right; }
+  .meta strong { color: var(--dark); font-weight: 500; }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    padding: 7px 14px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--dark);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover {
+    background: var(--info-bg);
+    border-color: var(--gold);
+  }
+  .btn-primary {
+    background: var(--dark);
+    color: white;
+    border-color: var(--dark);
+  }
+  .btn-primary:hover {
+    background: #000;
+    color: var(--gold);
+  }
+  .btn-icon { font-size: 14px; line-height: 1; }
+  .save-status {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--gray);
+    font-style: italic;
+  }
+  .save-status.saved { color: var(--success); font-style: normal; }
+
+  nav.toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+  nav.toc a {
+    color: var(--gray);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    transition: all 0.15s;
+  }
+  nav.toc a:hover { color: var(--dark); background: var(--info-bg); }
+  nav.toc span { color: var(--border-strong); padding: 6px 0; }
+
+  section { margin-bottom: 48px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+  .section-sub { color: var(--gray); font-size: 13px; margin-left: auto; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .grid { display: grid; gap: 16px; }
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .kpi-label {
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .kpi-sub { font-size: 12px; color: var(--gray); margin-top: 4px; }
+  .kpi-card.alert { background: var(--danger-bg); border-color: var(--danger); }
+  .kpi-card.alert .kpi-value { color: var(--danger); }
+
+  .alert {
+    border-left: 3px solid;
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+  }
+  .alert-critical { border-left-color: var(--danger); background: var(--danger-bg); }
+  .alert-warning { border-left-color: var(--warning); background: var(--warning-bg); }
+  .alert-info { border-left-color: var(--gold); background: var(--info-bg); }
+  .alert-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .alert-body { font-size: 13px; color: var(--gray); }
+  .alert-body strong { color: var(--dark); font-weight: 500; }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .badge-ok { background: var(--success-bg); color: var(--success); }
+  .badge-warn { background: var(--warning-bg); color: var(--warning); }
+  .badge-crit { background: var(--danger-bg); color: var(--danger); }
+  .badge-new { background: #E5DFFA; color: #5B3D9F; }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .input-label {
+    font-size: 12px;
+    color: var(--gray);
+    flex: 1;
+  }
+  .input-label .sku-tag {
+    color: var(--dark);
+    font-weight: 500;
+  }
+  input[type="number"] {
+    width: 90px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: right;
+    background: var(--surface);
+    color: var(--dark);
+    transition: border-color 0.15s;
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+  }
+  input[type="number"].wider { width: 110px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-strong);
+    background: var(--info-bg);
+  }
+  th:not(:first-child) { text-align: right; }
+  td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  td:not(:first-child) { text-align: right; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--light); }
+  td.sku-name { font-weight: 500; }
+  td.numeric { font-variant-numeric: tabular-nums; }
+  tr.inactive td { opacity: 0.5; }
+
+  /* SKU input groups */
+  .sku-group {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: var(--surface);
+  }
+  .sku-group.new-sku { border-color: #C5B5E8; background: #F9F6FE; }
+  .sku-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 13px;
+  }
+  .sku-group-inputs {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 10px;
+    font-size: 11px;
+  }
+  .sku-group-inputs label {
+    color: var(--gray);
+    align-self: center;
+  }
+  .sku-group-inputs input {
+    width: 80px;
+  }
+
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-row:last-child { border-bottom: none; }
+  .timeline-sku { font-size: 13px; font-weight: 500; }
+  .timeline-bar {
+    position: relative;
+    height: 28px;
+    background: var(--info-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-coverage {
+    position: absolute; top: 0; left: 0;
+    height: 100%;
+    background: var(--success);
+    opacity: 0.5;
+  }
+  .bar-coverage.low { background: var(--warning); }
+  .bar-coverage.crit { background: var(--danger); }
+  .bar-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    background: var(--dark);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 2;
+  }
+  .bar-marker.order { background: var(--gold); color: var(--dark); }
+  .timeline-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .timeline-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .kpi-section { margin-bottom: 20px; }
+  .kpi-section h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kpi-section h3::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--gold);
+  }
+  .kpi-list { list-style: none; }
+  .kpi-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .kpi-list li:last-child { border-bottom: none; }
+  .kpi-list-name {
+    font-weight: 500;
+    min-width: 180px;
+    font-size: 13px;
+  }
+  .kpi-list-desc {
+    color: var(--gray);
+    font-size: 13px;
+    flex: 1;
+  }
+  .kpi-list-formula {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    background: var(--info-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+
+  .formula-box {
+    background: var(--info-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin: 8px 0;
+    white-space: pre-wrap;
+    line-height: 1.7;
+  }
+
+  .note-box {
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 13px;
+    color: var(--gray);
+  }
+  .note-box strong { color: var(--dark); font-weight: 600; }
+
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(34, 38, 39, 0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-backdrop.active { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: auto;
+  }
+  .modal h3 { margin-bottom: 12px; }
+  .modal textarea {
+    width: 100%;
+    height: 200px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    margin: 12px 0;
+    resize: vertical;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 20px 12px 60px; }
+    h1 { font-size: 16px; }
+    .timeline-row { grid-template-columns: 120px 1fr; }
+    table { font-size: 12px; }
+    th, td { padding: 8px 6px; }
+  }
+
+  @media print {
+    body { background: white; padding: 12px; }
+    .card, .kpi-card { break-inside: avoid; }
+    nav.toc, .toolbar, .modal-backdrop { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div>
+      <div class="brand">
+        <span class="brand-mark">Puhra</span>
+        <h1>Sistema de Gestão de Estoque · v2.0</h1>
+      </div>
+    </div>
+    <div class="meta">
+      <div><strong id="today-date"></strong></div>
+      <div style="margin-top: 4px;">Edite os campos e tudo recalcula automaticamente</div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn" onclick="exportData()" title="Compartilhar dados com seu sócio"><span class="btn-icon">↑</span> Exportar dados</button>
+    <button class="btn" onclick="showImport()" title="Carregar dados do sócio"><span class="btn-icon">↓</span> Importar dados</button>
+    <button class="btn" onclick="window.print()"><span class="btn-icon">⎙</span> Imprimir</button>
+    <button class="btn" onclick="resetData()" title="Voltar aos valores iniciais"><span class="btn-icon">↺</span> Resetar</button>
+    <span class="save-status" id="save-status">Pronto</span>
+  </div>
+
+  <nav class="toc">
+    <a href="#alertas">Alertas</a><span>·</span>
+    <a href="#config">Configuração</a><span>·</span>
+    <a href="#saude">Saúde do estoque</a><span>·</span>
+    <a href="#reposicao">Plano de reposição</a><span>·</span>
+    <a href="#timeline">Linha do tempo</a><span>·</span>
+    <a href="#kpis">KPIs</a><span>·</span>
+    <a href="#metodologia">Metodologia</a>
+  </nav>
+
+  <!-- ALERTAS -->
+  <section id="alertas">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>Ações urgentes</h2>
+      <span class="section-sub" id="alert-count"></span>
+    </div>
+    <div id="alerts-container"></div>
+  </section>
+
+  <!-- VISÃO GERAL -->
+  <section>
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>Visão geral</h2>
+    </div>
+    <div class="grid grid-4">
+      <div class="kpi-card">
+        <div class="kpi-label">Estoque embalado total</div>
+        <div class="kpi-value" id="kpi-total-embalado">—</div>
+        <div class="kpi-sub">unidades prontas para venda</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Demanda mensal projetada</div>
+        <div class="kpi-value" id="kpi-demanda-mensal">—</div>
+        <div class="kpi-sub">vendas + seeding influenciadores</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Cobertura média</div>
+        <div class="kpi-value" id="kpi-cobertura">—</div>
+        <div class="kpi-sub">dias até esgotar</div>
+      </div>
+      <div class="kpi-card" id="kpi-acao-card">
+        <div class="kpi-label">SKUs em estado crítico</div>
+        <div class="kpi-value" id="kpi-criticos">—</div>
+        <div class="kpi-sub">requerem ação imediata</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONFIGURAÇÃO -->
+  <section id="config">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>Configurar estoque, vendas e parâmetros</h2>
+      <span class="section-sub">Atualize toda semana</span>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom: 16px;">
+      <div class="card">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gold); margin-bottom: 14px; font-weight: 600;">Estoque atual por SKU</h3>
+        <p style="font-size: 12px; color: var(--gray); margin-bottom: 14px;">Embalado pronto · embalagens vazias · cartuchos disponíveis</p>
+        <div id="stock-inputs"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gold); margin-bottom: 14px; font-weight: 600;">Vendas mensais esperadas</h3>
+        <p style="font-size: 12px; color: var(--gray); margin-bottom: 14px;">Baseline a partir de qual o forecast é calculado.</p>
+        <div id="sales-inputs"></div>
+      </div>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gold); margin-bottom: 14px; font-weight: 600;">Marketing adicional</h3>
+        <div class="input-row">
+          <span class="input-label">TikTok Ads <span style="color: var(--gray); font-size: 11px;">(unidades extra/mês)</span></span>
+          <input type="number" id="tiktok-extra" value="500" min="0" step="50">
+        </div>
+        <div class="input-row">
+          <span class="input-label">Crescimento Meta Ads</span>
+          <input type="number" id="meta-growth" value="20" min="0" max="200" step="5">
+          <span style="font-size: 12px; color: var(--gray); width: 12px;">%</span>
+        </div>
+        <div class="input-row">
+          <span class="input-label">Seeding influencers <span style="color: var(--gray); font-size: 11px;">(un/mês)</span></span>
+          <input type="number" id="seeding-total" value="400" min="0" step="50">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gold); margin-bottom: 14px; font-weight: 600;">Lead times (dias)</h3>
+        <div class="input-row">
+          <span class="input-label">Embalagem (frasco)</span>
+          <input type="number" id="lt-embalagem" value="80" min="1" step="1">
+        </div>
+        <div class="input-row">
+          <span class="input-label">Cartucho</span>
+          <input type="number" id="lt-cartucho" value="30" min="1" step="1">
+        </div>
+        <div class="input-row">
+          <span class="input-label">Produção/envase</span>
+          <input type="number" id="lt-producao" value="20" min="1" step="1">
+        </div>
+        <div class="input-row">
+          <span class="input-label">Buffer de segurança</span>
+          <input type="number" id="safety-days" value="30" min="0" step="5">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gold); margin-bottom: 14px; font-weight: 600;">MOQs (mínimo de pedido)</h3>
+        <p style="font-size: 11px; color: var(--gray); margin-bottom: 14px;">5.000 se negocia pedidos combinados, 10.000 padrão.</p>
+        <div class="input-row">
+          <span class="input-label">Embalagem (frasco)</span>
+          <input type="number" id="moq-embalagem" value="5000" min="100" step="500">
+        </div>
+        <div class="input-row">
+          <span class="input-label">Cartucho</span>
+          <input type="number" id="moq-cartucho" value="5000" min="100" step="500">
+        </div>
+        <div class="input-row">
+          <span class="input-label">Lote mínimo de envase</span>
+          <input type="number" id="moq-envase" value="500" min="50" step="50">
+        </div>
+        <div class="input-row" style="margin-top: 12px;">
+          <span class="input-label">Margem pico de demanda</span>
+          <input type="number" id="margin-peak" value="30" min="0" max="100" step="5">
+          <span style="font-size: 12px; color: var(--gray); width: 12px;">%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAÚDE DO ESTOQUE -->
+  <section id="saude">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>Saúde do estoque por SKU</h2>
+      <span class="section-sub">Cobertura considerando os 3 componentes</span>
+    </div>
+    <div class="card" style="padding: 0; overflow-x: auto;">
+      <table id="health-table">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Embalado</th>
+            <th>Embalagem</th>
+            <th>Cartucho</th>
+            <th>Demanda/dia</th>
+            <th>Cobertura</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="health-tbody"></tbody>
+      </table>
+    </div>
+    <p style="font-size: 11px; color: var(--gray); margin-top: 8px; padding: 0 4px;">Cobertura = unidades vendáveis ÷ demanda diária. SKUs com demanda zero não aparecem aqui.</p>
+  </section>
+
+  <!-- PLANO DE REPOSIÇÃO -->
+  <section id="reposicao">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>Plano de reposição</h2>
+      <span class="section-sub">Quando pedir e quanto pedir</span>
+    </div>
+    <div class="card" style="padding: 0; overflow-x: auto; margin-bottom: 16px;">
+      <table id="reorder-table">
+        <thead>
+          <tr>
+            <th>SKU / Componente</th>
+            <th>Estoque</th>
+            <th>Cobertura</th>
+            <th>Ponto de pedido</th>
+            <th>Qtd. sugerida</th>
+            <th>Pedir até</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="reorder-tbody"></tbody>
+      </table>
+    </div>
+    <div class="note-box">
+      <strong>Como interpretar:</strong> O <em>ponto de pedido</em> é o nível de estoque mínimo pra acionar reposição sem ruptura. A <em>quantidade sugerida</em> já considera o MOQ — se a demanda é menor que o MOQ, ainda compra o MOQ. <em>Pedir até</em> é a data limite. Status "PEDIR JÁ" = você está abaixo do ponto de pedido agora; "PEDIR EM SEMANAS" = aproximando.
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section id="timeline">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2>Linha do tempo · próximos 180 dias</h2>
+      <span class="section-sub">Cobertura projetada por SKU</span>
+    </div>
+    <div class="card">
+      <div id="timeline-rows"></div>
+      <div class="timeline-legend">
+        <div class="timeline-legend-item"><div class="legend-dot" style="background: var(--success); opacity: 0.5;"></div> Cobertura saudável</div>
+        <div class="timeline-legend-item"><div class="legend-dot" style="background: var(--warning); opacity: 0.5;"></div> Cobertura limitada</div>
+        <div class="timeline-legend-item"><div class="legend-dot" style="background: var(--danger); opacity: 0.5;"></div> Risco de ruptura</div>
+        <div class="timeline-legend-item"><div class="legend-dot" style="background: var(--gold);"></div> Pedir reposição</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPIs -->
+  <section id="kpis">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <h2>KPIs a monitorar</h2>
+      <span class="section-sub">Sua rotina de operações</span>
+    </div>
+
+    <div class="card">
+      <div class="kpi-section">
+        <h3>Diariamente · 5 minutos por dia</h3>
+        <ul class="kpi-list">
+          <li>
+            <div class="kpi-list-name">Vendas por SKU</div>
+            <div class="kpi-list-desc">Unidades vendidas no dia, por produto. Compare com a média móvel de 7 dias.<br><span class="kpi-list-formula">vendas hoje vs média 7d</span></div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Envios para influencers</div>
+            <div class="kpi-list-desc">Quais produtos saíram pra seeding. Subtrair do estoque embalado imediatamente.<br><span class="kpi-list-formula">embalado(t) = embalado(t-1) − vendas − seeding</span></div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Acumulado vs forecast</div>
+            <div class="kpi-list-desc">% do forecast mensal já realizado. Se &gt;100% no meio do mês, ajuste o forecast pra cima.<br><span class="kpi-list-formula">vendas mtd ÷ forecast mensal</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="kpi-section">
+        <h3>Semanalmente · 30 minutos toda segunda</h3>
+        <ul class="kpi-list">
+          <li>
+            <div class="kpi-list-name">Velocidade de venda</div>
+            <div class="kpi-list-desc">Média diária dos últimos 7 dias por SKU. Atualizar campo "Vendas mensais esperadas".<br><span class="kpi-list-formula">média 7d × 30 = nova base mensal</span></div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Dias de cobertura</div>
+            <div class="kpi-list-desc">Estoque embalado ÷ velocidade diária. Alerta se algum SKU cair abaixo do lead time + safety.<br><span class="kpi-list-formula">estoque ÷ vendas/dia</span></div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Status dos pedidos abertos</div>
+            <div class="kpi-list-desc">Datas previstas de chegada de embalagens e cartuchos. Confirmar com fornecedor.</div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Confirmação dos pontos de pedido</div>
+            <div class="kpi-list-desc">Rodar essa planilha. Ver se algum SKU mudou de cor (ficou amarelo/vermelho).</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="kpi-section">
+        <h3>Mensalmente · 2 horas no fim do mês</h3>
+        <ul class="kpi-list">
+          <li>
+            <div class="kpi-list-name">Acuracidade do forecast</div>
+            <div class="kpi-list-desc">Vendas reais vs projetado, por SKU. Calibrar para o próximo mês.<br><span class="kpi-list-formula">erro = (real − projetado) ÷ projetado</span></div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Recálculo de safety stock</div>
+            <div class="kpi-list-desc">Se o forecast errou mais de 25% por 2 meses seguidos, aumente o buffer de segurança.</div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Giro de estoque</div>
+            <div class="kpi-list-desc">Quantas vezes o estoque "girou" no mês. Saudável: 0,3-0,5 (cobertura de 2-3 meses).<br><span class="kpi-list-formula">vendas mês ÷ estoque médio</span></div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Revisão de mix e canibalização</div>
+            <div class="kpi-list-desc">SKUs estão vendendo proporcionalmente ao esperado? As versões 70ml/100ml estão canibalizando as 140ml/150ml ou trazendo demanda incremental?</div>
+          </li>
+          <li>
+            <div class="kpi-list-name">Custo de capital parado</div>
+            <div class="kpi-list-desc">Custo médio × estoque médio × custo de oportunidade. Se está alto, reduza buffers ou compre menos.</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- METODOLOGIA -->
+  <section id="metodologia">
+    <div class="section-head">
+      <span class="section-num">08</span>
+      <h2>Metodologia e fórmulas</h2>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Demanda diária projetada</h3>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 8px;">Baseada na média histórica + crescimento Meta + adicional TikTok + seeding, distribuído pelo mix de vendas atual.</p>
+        <div class="formula-box">demanda_mensal_sku =
+  base × (1 + crescimento_meta)
+  + tiktok_total × mix_percentual
+  + seeding ÷ nº SKUs ativas
+
+demanda_diária = demanda_mensal ÷ 30</div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Ponto de pedido (Reorder Point)</h3>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 8px;">Nível de estoque que aciona um novo pedido — calculado pra que o pedido chegue antes do estoque acabar.</p>
+        <div class="formula-box">ponto_pedido = demanda_diária
+              × (lead_time + safety_days)
+
+# Exemplo: Lip Balm
+# 10 un/dia × 100 dias = 1.000
+# + 10 × 30 dias safety =  300
+# = ponto de pedido     = 1.300</div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Quantidade sugerida</h3>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 8px;">Quanto pedir em cada reposição. O cálculo arredonda pra cima até o múltiplo de MOQ.</p>
+        <div class="formula-box">qtd_calculada = demanda_diária
+              × (lead_time + safety)
+              × (1 + margem_pico)
+
+qtd_final = MAX(qtd_calculada, MOQ)
+# Sempre arredondado pra cima
+# até múltiplo de MOQ</div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Lead times totais</h3>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 8px;">Tempo do "pedido feito" até "produto pronto pra vender", por componente.</p>
+        <div class="formula-box">embalagem nova → produto pronto:
+  80d (embalagem) + 20d (envase) = 100d
+
+cartucho novo → produto embalável:
+  30d (cartucho) + 20d (envase) = 50d
+
+só envase (já tem embalagem):
+  15-20 dias</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- MODAL EXPORT -->
+<div class="modal-backdrop" id="export-modal">
+  <div class="modal">
+    <h3 style="font-size: 16px;">Exportar dados</h3>
+    <p style="font-size: 13px; color: var(--gray); margin-bottom: 8px;">Copie esse texto e mande pro Pedro. Ele cola em "Importar dados" e fica com os mesmos números.</p>
+    <textarea id="export-textarea" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="copyExport()">Copiar</button>
+      <button class="btn btn-primary" onclick="closeModal('export-modal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT -->
+<div class="modal-backdrop" id="import-modal">
+  <div class="modal">
+    <h3 style="font-size: 16px;">Importar dados</h3>
+    <p style="font-size: 13px; color: var(--gray); margin-bottom: 8px;">Cole aqui os dados que o sócio te enviou.</p>
+    <textarea id="import-textarea" placeholder="Cole o JSON aqui..."></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('import-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="doImport()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================== DEFINIÇÃO DE SKUs ===================
+const SKUS = [
+  { id: 'glowing-milk-140',  name: 'Glowing Milk 140ml',     stockEmb: 300,  stockPkg: 1680, stockCart: 1000, baseSales: 247, isNew: false },
+  { id: 'glowing-milk-70',   name: 'Glowing Milk 70ml',      stockEmb: 0,    stockPkg: 1000, stockCart: 1000, baseSales: 0,   isNew: true },
+  { id: 'lip-balm',          name: 'Lip Balm 10ml',          stockEmb: 1195, stockPkg: 0,    stockCart: 0,    baseSales: 129, isNew: false },
+  { id: 'hidratante',        name: 'Hidratante 50ml',        stockEmb: 935,  stockPkg: 600,  stockCart: 0,    baseSales: 109, isNew: false },
+  { id: 'serum',             name: 'Sérum 50ml',             stockEmb: 950,  stockPkg: 1000, stockCart: 0,    baseSales: 105, isNew: false },
+  { id: 'cleanser-150',      name: 'Tropical Cleanser 150ml',stockEmb: 160,  stockPkg: 0,    stockCart: 0,    baseSales: 75,  isNew: false },
+  { id: 'cleanser-100',      name: 'Tropical Cleanser 100ml',stockEmb: 0,    stockPkg: 10000,stockCart: 1000, baseSales: 0,   isNew: true },
+];
+
+const STORAGE_KEY = 'puhra-stock-v2';
+
+const fmt = (n, dec = 0) => {
+  if (n === Infinity || isNaN(n) || n === null) return '—';
+  return Number(n).toLocaleString('pt-BR', { maximumFractionDigits: dec, minimumFractionDigits: dec });
+};
+const $ = id => document.getElementById(id);
+
+// =================== INICIALIZAÇÃO ===================
+function init() {
+  $('today-date').textContent = new Date().toLocaleDateString('pt-BR', {
+    day: '2-digit', month: 'long', year: 'numeric'
+  });
+
+  // Render inputs por SKU (estoque)
+  const stockHtml = SKUS.map(s => `
+    <div class="sku-group ${s.isNew ? 'new-sku' : ''}">
+      <div class="sku-group-header">
+        ${s.name}
+        ${s.isNew ? '<span class="badge badge-new">Nova SKU</span>' : ''}
+      </div>
+      <div class="sku-group-inputs">
+        <label>Embalado pronto</label>
+        <input type="number" id="emb-${s.id}" value="${s.stockEmb}" min="0">
+        <label>Embalagens vazias</label>
+        <input type="number" id="pkg-${s.id}" value="${s.stockPkg}" min="0">
+        <label>Cartuchos</label>
+        <input type="number" id="cart-${s.id}" value="${s.stockCart}" min="0">
+      </div>
+    </div>
+  `).join('');
+  $('stock-inputs').innerHTML = stockHtml;
+
+  // Render inputs de vendas
+  const salesHtml = SKUS.map(s => `
+    <div class="input-row">
+      <span class="input-label"><span class="sku-tag">${s.name}</span> ${s.isNew ? '<span class="badge badge-new" style="margin-left: 4px;">Nova</span>' : ''}</span>
+      <input type="number" id="sales-${s.id}" value="${s.baseSales}" min="0">
+    </div>
+  `).join('');
+  $('sales-inputs').innerHTML = salesHtml;
+
+  // Carrega dados salvos antes de adicionar listeners
+  loadFromStorage();
+
+  // Listeners (depois de carregar)
+  document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', () => {
+      recalculate();
+      saveToStorage();
+    });
+  });
+
+  recalculate();
+}
+
+// =================== PERSISTÊNCIA ===================
+function getCurrentData() {
+  const data = { skus: {}, params: {} };
+  SKUS.forEach(s => {
+    data.skus[s.id] = {
+      emb: +$(`emb-${s.id}`).value,
+      pkg: +$(`pkg-${s.id}`).value,
+      cart: +$(`cart-${s.id}`).value,
+      sales: +$(`sales-${s.id}`).value,
+    };
+  });
+  ['tiktok-extra','meta-growth','seeding-total','lt-embalagem','lt-cartucho','lt-producao','safety-days','moq-embalagem','moq-cartucho','moq-envase','margin-peak'].forEach(id => {
+    data.params[id] = +$(id).value;
+  });
+  data.savedAt = new Date().toISOString();
+  return data;
+}
+
+function applyData(data) {
+  if (!data || !data.skus) return false;
+  SKUS.forEach(s => {
+    if (data.skus[s.id]) {
+      const d = data.skus[s.id];
+      if (d.emb !== undefined) $(`emb-${s.id}`).value = d.emb;
+      if (d.pkg !== undefined) $(`pkg-${s.id}`).value = d.pkg;
+      if (d.cart !== undefined) $(`cart-${s.id}`).value = d.cart;
+      if (d.sales !== undefined) $(`sales-${s.id}`).value = d.sales;
+    }
+  });
+  if (data.params) {
+    Object.keys(data.params).forEach(id => {
+      const el = $(id);
+      if (el && data.params[id] !== undefined) el.value = data.params[id];
+    });
+  }
+  return true;
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(getCurrentData()));
+    showSaveStatus('Salvo no navegador');
+  } catch (e) {
+    console.warn('localStorage indisponível:', e);
+  }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      applyData(JSON.parse(raw));
+      showSaveStatus('Dados anteriores carregados');
+    }
+  } catch (e) {
+    console.warn('Erro ao carregar:', e);
+  }
+}
+
+function showSaveStatus(msg) {
+  const el = $('save-status');
+  el.textContent = '✓ ' + msg;
+  el.classList.add('saved');
+  clearTimeout(window._saveTimer);
+  window._saveTimer = setTimeout(() => {
+    el.textContent = 'Pronto';
+    el.classList.remove('saved');
+  }, 2000);
+}
+
+function exportData() {
+  const data = getCurrentData();
+  $('export-textarea').value = JSON.stringify(data, null, 2);
+  $('export-modal').classList.add('active');
+}
+
+function copyExport() {
+  $('export-textarea').select();
+  document.execCommand('copy');
+  showSaveStatus('Copiado pra área de transferência');
+}
+
+function showImport() {
+  $('import-textarea').value = '';
+  $('import-modal').classList.add('active');
+}
+
+function doImport() {
+  try {
+    const data = JSON.parse($('import-textarea').value);
+    if (applyData(data)) {
+      recalculate();
+      saveToStorage();
+      closeModal('import-modal');
+      showSaveStatus('Dados importados');
+    } else {
+      alert('Dados inválidos.');
+    }
+  } catch (e) {
+    alert('Erro ao importar: ' + e.message);
+  }
+}
+
+function closeModal(id) {
+  $(id).classList.remove('active');
+}
+
+function resetData() {
+  if (!confirm('Resetar todos os campos para os valores iniciais? Os dados salvos serão apagados.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+// =================== CÁLCULO PRINCIPAL ===================
+function recalculate() {
+  const tiktokExtra = +$('tiktok-extra').value || 0;
+  const metaGrowth = (+$('meta-growth').value || 0) / 100;
+  const seedingTotal = +$('seeding-total').value || 0;
+  const ltEmbalagem = +$('lt-embalagem').value || 80;
+  const ltCartucho = +$('lt-cartucho').value || 30;
+  const ltProducao = +$('lt-producao').value || 20;
+  const safetyDays = +$('safety-days').value || 30;
+  const moqEmb = +$('moq-embalagem').value || 5000;
+  const moqCart = +$('moq-cartucho').value || 5000;
+  const moqEnvase = +$('moq-envase').value || 500;
+  const marginPeak = (+$('margin-peak').value || 30) / 100;
+
+  // Coletar dados de cada SKU
+  const data = SKUS.map(s => ({
+    ...s,
+    stockEmb: +$(`emb-${s.id}`).value || 0,
+    stockPkg: +$(`pkg-${s.id}`).value || 0,
+    stockCart: +$(`cart-${s.id}`).value || 0,
+    baseSales: +$(`sales-${s.id}`).value || 0,
+  }));
+
+  // Total das vendas base só das SKUs ATIVAS (com vendas > 0)
+  const activeSkus = data.filter(d => d.baseSales > 0);
+  const totalBase = activeSkus.reduce((a, b) => a + b.baseSales, 0);
+  const seedingPorSku = activeSkus.length > 0 ? seedingTotal / activeSkus.length : 0;
+
+  // Calcular projeções
+  data.forEach(d => {
+    if (d.baseSales === 0) {
+      d.active = false;
+      d.demandaMensal = 0;
+      d.demandaDiaria = 0;
+      d.coberturaEmbDias = Infinity;
+      d.coberturaTotalDias = Infinity;
+      return;
+    }
+    d.active = true;
+    d.mix = totalBase > 0 ? d.baseSales / totalBase : 0;
+    d.tiktokAdd = tiktokExtra * d.mix;
+    d.metaGrowth = d.baseSales * metaGrowth;
+    d.seedingAdd = seedingPorSku;
+    d.demandaMensal = d.baseSales + d.metaGrowth + d.tiktokAdd + d.seedingAdd;
+    d.demandaDiaria = d.demandaMensal / 30;
+
+    d.coberturaEmbDias = d.demandaDiaria > 0 ? d.stockEmb / d.demandaDiaria : Infinity;
+
+    // Total disponível: o mínimo entre embalagem+embalado e cartucho+embalado
+    // (cartucho é gargalo se for menor que embalagem)
+    const potencialEnvase = Math.min(d.stockPkg, d.stockCart || 999999);
+    d.totalDisponivel = d.stockEmb + potencialEnvase;
+    d.coberturaTotalDias = d.demandaDiaria > 0 ? d.totalDisponivel / d.demandaDiaria : Infinity;
+
+    // Lead times
+    d.leadTimeEmbalagem = ltEmbalagem + ltProducao;
+    d.leadTimeProducao = ltProducao;
+    d.leadTimeCartucho = ltCartucho + ltProducao;
+
+    // Pontos de pedido
+    d.rpEmbalagem = Math.ceil(d.demandaDiaria * (d.leadTimeEmbalagem + safetyDays));
+    d.rpProducao = Math.ceil(d.demandaDiaria * (d.leadTimeProducao + safetyDays));
+    d.rpCartucho = Math.ceil(d.demandaDiaria * (d.leadTimeCartucho + safetyDays));
+
+    // Quantidades sugeridas (com margem de pico, arredondadas pro MOQ)
+    const qtdEmbCalc = Math.ceil(d.demandaDiaria * (d.leadTimeEmbalagem + safetyDays) * (1 + marginPeak));
+    d.qtdEmbalagem = roundUpToMoq(qtdEmbCalc, moqEmb);
+
+    const qtdCartCalc = Math.ceil(d.demandaDiaria * (d.leadTimeCartucho + safetyDays) * (1 + marginPeak));
+    d.qtdCartucho = roundUpToMoq(qtdCartCalc, moqCart);
+
+    const qtdEnvCalc = Math.ceil(d.demandaDiaria * 60 * (1 + marginPeak));
+    d.qtdEnvase = roundUpToMoq(qtdEnvCalc, moqEnvase);
+  });
+
+  renderAlerts(data, safetyDays);
+  renderKPIs(data);
+  renderHealthTable(data);
+  renderReorderTable(data, safetyDays);
+  renderTimeline(data);
+}
+
+function roundUpToMoq(n, moq) {
+  if (n <= moq) return moq;
+  return Math.ceil(n / moq) * moq;
+}
+
+// =================== ALERTAS ===================
+function renderAlerts(data, safetyDays) {
+  const alerts = [];
+  data.filter(d => d.active).forEach(d => {
+    // Embalado crítico
+    if (d.coberturaEmbDias < 30) {
+      const acao = d.stockPkg > d.demandaDiaria * 60 && (d.stockCart > d.demandaDiaria * 60 || d.stockCart === 0)
+        ? `Você tem <strong>${fmt(d.stockPkg)} embalagens prontas</strong> — gargalo é só envase. Iniciar produção esta semana.`
+        : `Estoque embalado e de embalagens limitado. Avaliar produção emergencial e pedido de embalagens/cartuchos.`;
+      alerts.push({
+        type: 'critical',
+        title: `🔴 ${d.name} · só ${fmt(d.coberturaEmbDias)} dias de produto pronto`,
+        body: `Demanda projetada de ${fmt(d.demandaMensal)} un/mês (${fmt(d.demandaDiaria, 1)}/dia). ${acao}`
+      });
+    }
+    // Sem embalagens com lead time longo
+    if (d.stockPkg === 0 && d.coberturaEmbDias < d.leadTimeEmbalagem + safetyDays) {
+      alerts.push({
+        type: 'critical',
+        title: `🔴 ${d.name} · zero embalagens em estoque`,
+        body: `Lead time de embalagem é ${fmt(d.leadTimeEmbalagem)} dias. Estoque embalado dura ${fmt(d.coberturaEmbDias)} dias. <strong>Pedir embalagem agora</strong> ou haverá ruptura de ${fmt(d.leadTimeEmbalagem + safetyDays - d.coberturaEmbDias)} dias.`
+      });
+    }
+    // Cartucho zerado
+    if (d.stockCart === 0 && d.demandaDiaria > 0) {
+      alerts.push({
+        type: 'warning',
+        title: `🟡 ${d.name} · sem cartuchos em estoque`,
+        body: `Lead time de cartucho é ${fmt(d.leadTimeCartucho)} dias. Quando o estoque embalado acabar, sem cartucho não dá pra produzir mais. Pedir reposição.`
+      });
+    }
+    // Embalado warning
+    else if (d.coberturaEmbDias >= 30 && d.coberturaEmbDias < 60 && d.stockPkg > 0) {
+      alerts.push({
+        type: 'warning',
+        title: `🟡 ${d.name} · cobertura embalada em ${fmt(d.coberturaEmbDias)} dias`,
+        body: `Iniciar envase nas próximas 2 semanas. Você tem ${fmt(d.stockPkg)} embalagens disponíveis.`
+      });
+    }
+    // Embalagens próximas do ponto de pedido
+    if (d.stockPkg > 0 && d.coberturaTotalDias < (d.leadTimeEmbalagem + safetyDays) && d.coberturaTotalDias >= d.leadTimeEmbalagem) {
+      alerts.push({
+        type: 'warning',
+        title: `🟡 ${d.name} · embalagens chegando no ponto de pedido`,
+        body: `Cobertura total (${fmt(d.coberturaTotalDias)} dias) próxima do mínimo. Pedir reposição em até 2 semanas.`
+      });
+    }
+  });
+
+  $('alert-count').textContent = `${alerts.length} item${alerts.length === 1 ? '' : 's'} requer${alerts.length === 1 ? '' : 'em'} atenção`;
+  $('alerts-container').innerHTML = alerts.length === 0
+    ? '<div class="alert" style="border-left-color: var(--success); background: var(--success-bg);"><div class="alert-title">✅ Tudo em ordem</div><div class="alert-body">Nenhum SKU em estado crítico no momento.</div></div>'
+    : alerts.map(a => `
+      <div class="alert alert-${a.type}">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-body">${a.body}</div>
+      </div>
+    `).join('');
+}
+
+// =================== KPIs DE TOPO ===================
+function renderKPIs(data) {
+  const active = data.filter(d => d.active);
+  const totalEmb = data.reduce((a, b) => a + b.stockEmb, 0);
+  const totalDemanda = active.reduce((a, b) => a + b.demandaMensal, 0);
+  const cobs = active.map(d => isFinite(d.coberturaEmbDias) ? d.coberturaEmbDias : 0).filter(c => c > 0);
+  const coberturaMedia = cobs.length > 0 ? cobs.reduce((a, b) => a + b, 0) / cobs.length : 0;
+  const criticos = active.filter(d => d.coberturaEmbDias < 30 || (d.stockPkg === 0 && d.coberturaEmbDias < d.leadTimeEmbalagem + 30)).length;
+
+  $('kpi-total-embalado').textContent = fmt(totalEmb);
+  $('kpi-demanda-mensal').textContent = fmt(totalDemanda);
+  $('kpi-cobertura').textContent = fmt(coberturaMedia) + ' dias';
+  $('kpi-criticos').textContent = criticos;
+  $('kpi-acao-card').classList.toggle('alert', criticos > 0);
+}
+
+// =================== TABELA DE SAÚDE ===================
+function renderHealthTable(data) {
+  const rows = data.filter(d => d.active).map(d => {
+    let status, badge;
+    if (d.coberturaEmbDias < 30) { status = 'CRÍTICO'; badge = 'badge-crit'; }
+    else if (d.coberturaEmbDias < 60) { status = 'ATENÇÃO'; badge = 'badge-warn'; }
+    else { status = 'OK'; badge = 'badge-ok'; }
+
+    return `
+      <tr>
+        <td class="sku-name">${d.name}${d.isNew ? ' <span class="badge badge-new">Nova</span>' : ''}</td>
+        <td class="numeric">${fmt(d.stockEmb)}</td>
+        <td class="numeric">${fmt(d.stockPkg)}</td>
+        <td class="numeric">${fmt(d.stockCart)}</td>
+        <td class="numeric">${fmt(d.demandaDiaria, 1)}</td>
+        <td class="numeric">${fmt(d.coberturaEmbDias)} d</td>
+        <td><span class="badge ${badge}">${status}</span></td>
+      </tr>
+    `;
+  });
+
+  // Adicionar SKUs inativas no final, esmaecidas
+  const inactiveRows = data.filter(d => !d.active).map(d => `
+    <tr class="inactive">
+      <td class="sku-name">${d.name}${d.isNew ? ' <span class="badge badge-new">Nova</span>' : ''}</td>
+      <td class="numeric">${fmt(d.stockEmb)}</td>
+      <td class="numeric">${fmt(d.stockPkg)}</td>
+      <td class="numeric">${fmt(d.stockCart)}</td>
+      <td class="numeric">—</td>
+      <td class="numeric">—</td>
+      <td><span class="badge" style="background: var(--info-bg); color: var(--gray);">Sem demanda</span></td>
+    </tr>
+  `);
+
+  $('health-tbody').innerHTML = [...rows, ...inactiveRows].join('');
+}
+
+// =================== TABELA DE REPOSIÇÃO ===================
+function renderReorderTable(data, safetyDays) {
+  const rows = [];
+  data.filter(d => d.active).forEach(d => {
+    // Linha 1: Envase
+    const cobEnvase = d.stockEmb / d.demandaDiaria;
+    const dataAcaoEnvase = new Date(Date.now() + Math.max(0, cobEnvase - d.leadTimeProducao - safetyDays) * 86400000);
+    let badgeEnv, statusEnv;
+    if (cobEnvase < d.leadTimeProducao) { badgeEnv = 'badge-crit'; statusEnv = 'INICIAR JÁ'; }
+    else if (cobEnvase < d.leadTimeProducao + safetyDays) { badgeEnv = 'badge-warn'; statusEnv = 'INICIAR EM BREVE'; }
+    else { badgeEnv = 'badge-ok'; statusEnv = 'OK'; }
+
+    rows.push(`
+      <tr>
+        <td class="sku-name">${d.name} <span style="color: var(--gray); font-size: 11px; font-weight: normal;">· envase</span></td>
+        <td class="numeric">${fmt(d.stockEmb)}</td>
+        <td class="numeric">${fmt(cobEnvase)} d</td>
+        <td class="numeric">${fmt(d.rpProducao)}</td>
+        <td class="numeric">${fmt(d.qtdEnvase)}</td>
+        <td class="numeric">${dataAcaoEnvase.toLocaleDateString('pt-BR')}</td>
+        <td><span class="badge ${badgeEnv}">${statusEnv}</span></td>
+      </tr>
+    `);
+
+    // Linha 2: Embalagem (frasco)
+    const cobPkg = (d.stockEmb + d.stockPkg) / d.demandaDiaria;
+    const dataAcaoPkg = new Date(Date.now() + Math.max(0, cobPkg - d.leadTimeEmbalagem - safetyDays) * 86400000);
+    let badgePkg, statusPkg;
+    if (cobPkg < d.leadTimeEmbalagem) { badgePkg = 'badge-crit'; statusPkg = 'PEDIR JÁ'; }
+    else if (cobPkg < d.leadTimeEmbalagem + safetyDays) { badgePkg = 'badge-warn'; statusPkg = 'PEDIR EM SEMANAS'; }
+    else { badgePkg = 'badge-ok'; statusPkg = 'OK'; }
+
+    rows.push(`
+      <tr>
+        <td class="sku-name" style="padding-left: 30px;"><span style="color: var(--gray); font-size: 11px; font-weight: normal;">embalagem (frasco)</span></td>
+        <td class="numeric">${fmt(d.stockPkg)}</td>
+        <td class="numeric">${fmt(cobPkg)} d</td>
+        <td class="numeric">${fmt(d.rpEmbalagem)}</td>
+        <td class="numeric">${fmt(d.qtdEmbalagem)}</td>
+        <td class="numeric">${dataAcaoPkg.toLocaleDateString('pt-BR')}</td>
+        <td><span class="badge ${badgePkg}">${statusPkg}</span></td>
+      </tr>
+    `);
+
+    // Linha 3: Cartucho
+    const cobCart = (d.stockEmb + Math.min(d.stockPkg, d.stockCart || 0)) / d.demandaDiaria;
+    const dataAcaoCart = new Date(Date.now() + Math.max(0, cobCart - d.leadTimeCartucho - safetyDays) * 86400000);
+    let badgeCart, statusCart;
+    if (cobCart < d.leadTimeCartucho) { badgeCart = 'badge-crit'; statusCart = 'PEDIR JÁ'; }
+    else if (cobCart < d.leadTimeCartucho + safetyDays) { badgeCart = 'badge-warn'; statusCart = 'PEDIR EM SEMANAS'; }
+    else { badgeCart = 'badge-ok'; statusCart = 'OK'; }
+
+    rows.push(`
+      <tr>
+        <td class="sku-name" style="padding-left: 30px;"><span style="color: var(--gray); font-size: 11px; font-weight: normal;">cartucho</span></td>
+        <td class="numeric">${fmt(d.stockCart)}</td>
+        <td class="numeric">${fmt(cobCart)} d</td>
+        <td class="numeric">${fmt(d.rpCartucho)}</td>
+        <td class="numeric">${fmt(d.qtdCartucho)}</td>
+        <td class="numeric">${dataAcaoCart.toLocaleDateString('pt-BR')}</td>
+        <td><span class="badge ${badgeCart}">${statusCart}</span></td>
+      </tr>
+    `);
+  });
+
+  $('reorder-tbody').innerHTML = rows.join('');
+}
+
+// =================== TIMELINE ===================
+function renderTimeline(data) {
+  const HORIZON = 180;
+  const rows = data.filter(d => d.active).map(d => {
+    const cobEmb = Math.min(HORIZON, d.coberturaEmbDias);
+    const widthEmb = (cobEmb / HORIZON) * 100;
+
+    let barClass = '';
+    if (cobEmb < 30) barClass = 'crit';
+    else if (cobEmb < 60) barClass = 'low';
+
+    const diasAtePedir = Math.max(0, d.coberturaTotalDias - d.leadTimeEmbalagem - 30);
+    const showOrder = d.stockPkg < d.rpEmbalagem * 1.5 && diasAtePedir < HORIZON;
+    const orderPos = (diasAtePedir / HORIZON) * 100;
+    const stockoutPos = Math.min(100, (d.coberturaEmbDias / HORIZON) * 100);
+    const showStockout = d.coberturaEmbDias < HORIZON;
+
+    return `
+      <div class="timeline-row">
+        <div class="timeline-sku">${d.name}</div>
+        <div class="timeline-bar">
+          <div class="bar-coverage ${barClass}" style="width: ${widthEmb}%;"></div>
+          ${showStockout ? `<div class="bar-marker" style="left: ${stockoutPos}%;">×${fmt(d.coberturaEmbDias)}d</div>` : ''}
+          ${showOrder && diasAtePedir > 5 ? `<div class="bar-marker order" style="left: ${orderPos}%;">↻${fmt(diasAtePedir)}d</div>` : ''}
+          ${showOrder && diasAtePedir <= 5 ? `<div class="bar-marker order" style="left: 4%;">↻ HOJE</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const today = new Date();
+  const labels = [0, 30, 60, 90, 120, 150, 180].map(d => {
+    const date = new Date(today.getTime() + d * 86400000);
+    return `<div>${date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</div>`;
+  }).join('');
+
+  $('timeline-rows').innerHTML = `
+    <div class="timeline-row" style="border-bottom: 1px solid var(--border-strong);">
+      <div></div>
+      <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--gray); padding: 0 4px;">${labels}</div>
+    </div>
+    ${rows}
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
